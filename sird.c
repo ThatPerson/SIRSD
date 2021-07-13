@@ -11,7 +11,7 @@ struct System {
 	double *lS, *lI, *lR;
 	double b, g, w;
 	double t;
-	double DS, DI, DR;
+	double *DS, *DI, *DR;
 };
 
 struct Vec2D {
@@ -62,9 +62,9 @@ double iterate(struct System *s, double dt) {
 		for (y = 0; y < MAP_SIZE; y++) {
 			cp = POS(x,y);
 			N = s->S[cp] + s->I[cp] + s->R[cp];
-			dS = s->DS * s->lS[cp];
-			dI = s->DI * s->lI[cp];
-			dR = s->DR * s->lR[cp];
+			dS = s->DS[cp] * s->lS[cp];
+			dI = s->DI[cp] * s->lI[cp];
+			dR = s->DR[cp] * s->lR[cp];
 			dS += - (s->b * s->I[cp] * s->S[cp]) / N;
 			dI += ((s->b * s->I[cp] * s->S[cp]) / N) - (s->g * s->I[cp]);
 			dR += s->g * s->I[cp];
@@ -89,6 +89,9 @@ int setup(struct System *s) {
 	s->lS = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
 	s->lI = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
 	s->lR = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
+	s->DS = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
+	s->DI = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
+	s->DR = (double *) malloc(sizeof(double) * MAP_SIZE * MAP_SIZE);
 	int x, y;
 	for (x = 0; x < MAP_SIZE * MAP_SIZE; x++) {
 		s->S[x] = 500;
@@ -97,6 +100,9 @@ int setup(struct System *s) {
 		s->lS[x] = 0;
 		s->lI[x] = 0;
 		s->lR[x] = 0;
+		s->DS[x] = 3;
+		s->DI[x] = 3;
+		s->DR[x] = 3;
 	}
 	for (x = 0; x < 3; x++) 
 		s->I[rand() % (MAP_SIZE * MAP_SIZE)] = 1;
@@ -104,9 +110,22 @@ int setup(struct System *s) {
 	s->g = 2;
 	s->w = 0.4;
 	s->t = 0;
-	s->DS = 3;
-	s->DI = 1;
-	s->DR = 3;
+	for (x = 10; x < 50; x++) {
+		for (y = 40; y < 80; y++) {
+			s->DS[POS(x, y)] = 0.2;
+			s->DI[POS(x, y)] = 0.2;
+			s->DR[POS(x, y)] = 0.2;
+		}
+	}
+	
+	for (x = 40; x < 80; x++) {
+		for (y = 10; y < 30; y++) {
+			s->DS[POS(x, y)] = 6;
+			s->DI[POS(x, y)] = 6;
+			s->DR[POS(x, y)] = 6;
+		}
+	}
+			
 	return 0;
 }
 
@@ -118,6 +137,9 @@ int freemap(struct System *s) {
 	free(s->lS);
 	free(s->lI);
 	free(s->lR);
+	free(s->DS);
+	free(s->DI);
+	free(s->DR);
 	return 0;
 }
 
