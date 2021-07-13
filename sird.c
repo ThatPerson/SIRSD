@@ -8,6 +8,7 @@
 
 struct System { 
 	double *S, *I, *R;
+	double tS, tI, tR;
 	double *lS, *lI, *lR;
 	double b, g, w;
 	double t;
@@ -73,9 +74,11 @@ double iterate(struct System *s, double dt) {
 			s->S[cp] += dS * dt;
 			s->I[cp] += dI * dt;
 			s->R[cp] += dR * dt;
+			s->tS += s->S[cp];
+			s->tI += s->I[cp];
+			s->tR += s->R[cp];
 		}
 	}
-	
 	s->t += dt;
 	return s->t;
 }
@@ -108,7 +111,7 @@ int setup(struct System *s) {
 		s->I[rand() % (MAP_SIZE * MAP_SIZE)] = 1;
 	s->b = 5;
 	s->g = 2;
-	s->w = 0.4;
+	s->w = 0.2;
 	s->t = 0;
 	for (x = 10; x < 50; x++) {
 		for (y = 40; y < 80; y++) {
@@ -197,10 +200,13 @@ int main(int argc, char * argv[]) {
 	char filename[255];
 	FILE *lp = fopen("laplacian.csv", "w");
 	for (i = 0; i < 5000; i++) {
+		s.tS = 0;
+		s.tI = 0;
+		s.tR = 0;
 		iterate(&s, dt);
 		if (i%10 == 0) printsys(&s, i);
 		//printmap(s.lS, lp);
-		fprintf(fp, "%d, %f, %f, %f, %f\n", i, s.t, s.S[cp], s.I[cp], s.R[cp]);
+		fprintf(fp, "%d, %f, %f, %f, %f\n", i, s.t, s.tS, s.tI, s.tR);
 	}
 	freemap(&s);
 	fclose(fp);
